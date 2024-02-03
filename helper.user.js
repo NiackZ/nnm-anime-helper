@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.0
+// @version      1.1
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -12,7 +12,7 @@
 // @match         *://*.nnm-club.name/forum/release.php?what=anime_common*
 // @match         *://nnmclub2vvjqzjne6q4rrozkkkdmlvnrcsyes2bbkm7e5ut2aproy4id.onion/forum/release.php?what=anime_common*
 // @grant        none
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=rutracker.org
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=nnmclub.to
 // ==/UserScript==
 //
 
@@ -70,7 +70,7 @@ $Screenshots$
         localStorage.setItem(localStorageName, defaultTemplate);
     }
     const table = {};
-    const cells = document.querySelectorAll('td.row1 [align="right"]');
+    const cells = document.querySelectorAll('td.row1[align="right"]');
     for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         const name = cell.innerText.split(":")[0].trim();
@@ -79,6 +79,7 @@ $Screenshots$
         if (!input) input = cell.parentNode.querySelectorAll('td.row2 select');
         table[name] = {'label': cell, 'input': input};
     }
+    console.log(table);
     const addUrlRow = () => {
         const table = document.querySelector('#releaseForm table')
         if (!table) return;
