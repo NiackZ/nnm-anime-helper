@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.1
+// @version      1.2
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -210,7 +210,8 @@ $Screenshots$
         table['MediaInfo'].label.appendChild(document.createElement('br'));
         const fillButton = document.createElement('input');
         fillButton.type = 'button';
-        fillButton.style.width = '150px';
+        fillButton.style.width = '160px';
+        fillButton.style.fontSize = '12px';
         fillButton.value = 'Заполнить тех. данные';
         fillButton.onclick = function() {
             try{
@@ -223,12 +224,11 @@ $Screenshots$
                         miInfo.videoInfo.bitDepth == 10
                             ? `${miInfo.videoInfo.height}p ${miInfo.videoInfo.bitDepth}-bit`
                             : `${miInfo.videoInfo.height}p`;
-                    table['Характеристики видео(для заголовка)'].input.value =
+                    table['Видео'].input.value =
                         `${miInfo.videoInfo.codec}, ${miInfo.videoInfo.width}x${miInfo.videoInfo.height} (${miInfo.videoInfo.aspect}), ~${miInfo.videoInfo.fps} fps, ${miInfo.videoInfo.bitRate}`;
 
                     const jpAudio = miInfo.audioInfo.int.find(audio => audio.language.toLowerCase() === "японский");
                     const ruAudio = miInfo.audioInfo.int.find(audio => audio.language.toLowerCase() === "русский");
-                    const enAudio = miInfo.audioInfo.int.find(audio => audio.language.toLowerCase() === "английский");
                     const selectedAudio = jpAudio || ruAudio;
                     table['Аудио'].input.value = `${selectedAudio.codec}, ${selectedAudio.channels} ch, ${selectedAudio.sampleRate}, ${selectedAudio.bitRate}`;
                     let audioValue = "";
@@ -245,6 +245,10 @@ $Screenshots$
                     }
                     setOptionIfExists(table['Язык озвучки'].input[0], audioValue);
                     setOptionIfExists(table['Язык озвучки(для заголовка)'].input[0], audioValHeader);
+                    const ruSubs = miInfo.textInfo.some(sub => sub.language.toLowerCase() === "русский");
+                    if (ruSubs) {
+                        setOptionIfExists(table['Субтитры'].input[0], "Русские");
+                    }
                 }
             }
             catch (error) {
