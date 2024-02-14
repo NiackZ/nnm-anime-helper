@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.2
+// @version      1.3
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -66,6 +66,72 @@ $Screenshots$
         KAZ: "Казахский",
         JAP: "Японский"
     }
+    const TAG = {
+        header: '$Header$',
+        names: '$Names$',
+        namesString: '$String_names$',
+        country: '$Country$',
+        year: '$Year$',
+        season: '$Season$',
+        genre: '$Genre$',
+        type: '$Type$',
+        episodeCount: '$Count$',
+        episodeDuration: '$Duration$',
+        director: '$Director$',
+        studio: '$Studio$',
+        studioNames: '$Studio_names$',
+        description: '$Description$',
+        episodes: '$Episodes$',
+        release: '$Release$',
+        LINK: {
+            WA: '$WA_Link$',
+            Shikimori: '$Shikimori_Link$',
+            MAL: '$MAL_Link$',
+            AniDb: '$AniDb_Link$',
+            ANN: '$ANN_Link$',
+        },
+        VIDEO: {
+            ext: '$Video_ext$',
+            height: '$Video_height$',
+            width: '$Video_width$',
+            codec: '$Video_codec$',
+            codecProfile: '$Video_codec_profile$',
+            aspect: '$Video_aspect$',
+            bitrate: '$Video_bit_rate$',
+            fps: '$Video_fps$',
+            bitDepth: '$Video_bit_depth$',
+            chromaSubsampling: '$Video_chroma_subsampling$',
+            colorPrimaries: '$Video_color_primaries$'
+        },
+        FORM: {
+            quality: '$Quality$',
+            reaper: '$Reaper$',
+            poster: '$Poster$',
+            screenshots: '$Screenshots$',
+            MI: '$MediaInfo$'
+        },
+        AUDIO: {
+            start: '_USERAUDIO',
+            end: 'USERAUDIO_',
+        },
+        SUB: {
+            start: '_USERSUBS',
+            end: 'USERSUBS_'
+        },
+        TEMPLATE: {
+            index: '{index}',
+            language: '{language}',
+            flag: '{flag}',
+            codec: '{codec}',
+            bitRate: '{bitRate}',
+            sampleRate: '{sampleRate}',
+            bitDepth: '{bitDepth}',
+            channels: '{channels}',
+            title: '{title}',
+            format: '{format}',
+            type: '{type}'
+        }
+    }
     if (localStorage.getItem(localStorageName) === null) {
         localStorage.setItem(localStorageName, defaultTemplate);
     }
@@ -123,6 +189,7 @@ $Screenshots$
                     animeInfo = null;
                     const response = await fetchData(link);
                     if (!!response?.anime) {
+                        response.anime.release = response.anime?.release.trim();
                         animeInfo = response.anime;
                         fillFields(response.anime);
                     }
@@ -260,6 +327,22 @@ $Screenshots$
     const getTechData = () => {
         const textareaElement = table['MediaInfo'].input;
         return textareaElement.value ? MiParser(textareaElement.value) : null;
+    }
+    const addReaperField = () => {
+        const td = table['Видео'].input.parentNode;
+        td.appendChild(document.createElement('br'));
+
+        const textField = document.createElement('input');
+        textField.type = 'text';
+        textField.id = 'reaperField';
+        textField.style.marginBottom = '5px';
+        textField.size = 70;
+        td.appendChild(textField);
+
+        const freeEl = document.createElement('span');
+        freeEl.innerText = ' — Автор рипа';
+        freeEl.style.margin = '0 5px';
+        td.appendChild(freeEl);
     }
     const MiParser = (miData) => {
         const RU = 'RU';
@@ -460,9 +543,413 @@ $Screenshots$
         scriptField.innerText = '(script row)';
         return scriptField;
     }
+    const addTemplateRow = () => {
+        const table = document.querySelector('#releaseForm table')
+        if (!table) return;
+        const newRow = table.insertRow(3);
+        newRow.className = 'row1'
+
+        const actionCell = newRow.insertCell(0);
+        actionCell.colSpan = 2;
+        actionCell.style.textAlign = 'center';
+        actionCell.style.padding = '5px';
+
+        const setTemplateButton = document.createElement('input');
+        setTemplateButton.id = 'setTemplateButton';
+        setTemplateButton.type = 'button';
+        setTemplateButton.style.padding = '5px';
+        setTemplateButton.style.margin = '2px 5px';
+        setTemplateButton.style.fontSize = '9pt'
+        setTemplateButton.style.cursor = 'pointer';
+        setTemplateButton.value = 'Настроить шаблон';
+
+        const calcTemplateButton = document.createElement('input');
+        calcTemplateButton.id = 'calcTemplateButton';
+        calcTemplateButton.type = 'button';
+        calcTemplateButton.style.padding = '5px';
+        calcTemplateButton.style.margin = '2px 5px';
+        calcTemplateButton.style.fontSize = '9pt'
+        calcTemplateButton.style.cursor = 'pointer';
+        calcTemplateButton.value = 'Сгенерировать описание';
+        calcTemplateButton.onclick = async () => {
+            const code = generate(localStorage.getItem(localStorageName));
+            if (code) {
+                await navigator.clipboard.writeText(code);
+                console.info(code);
+                showNotification('Сгенерированное описание скопировано в буфер обмена');
+            }
+        };
+
+        actionCell.appendChild(setTemplateButton);
+        actionCell.appendChild(calcTemplateButton);
+    }
+
+    const showNotification = (message) => {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        notification.style.position = 'fixed';
+        notification.style.top = '30px';
+        notification.style.left = '50%';
+        notification.style.transform = 'translateX(-50%)';
+        notification.style.padding = '10px';
+        notification.style.backgroundColor = 'green';
+        notification.style.color = 'white';
+        notification.style.borderRadius = '5px';
+        notification.style.opacity = '0'; // Устанавливаем начальную прозрачность
+        notification.style.transition = 'opacity 0.1s ease-in-out'; // Добавляем анимацию
+        notification.style.zIndex = '999';
+        document.body.appendChild(notification);
+
+        setTimeout(function () {
+            notification.style.opacity = '1';
+        }, 100);
+
+        setTimeout(function () {
+            notification.style.opacity = '0';
+
+            setTimeout(function () {
+                document.body.removeChild(notification);
+            }, 500);
+        }, 3000);
+    }
+
+    const createModal = () => {
+
+        const modalContainer = document.createElement('div');
+        modalContainer.style.display = 'none';
+        modalContainer.style.position = 'fixed';
+        modalContainer.style.top = '0';
+        modalContainer.style.left = '0';
+        modalContainer.style.width = '100%';
+        modalContainer.style.height = '100%';
+        modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        modalContainer.style.justifyContent = 'center';
+        modalContainer.style.alignItems = 'center';
+        modalContainer.style.zIndex = '999'
+
+        const modalContent = document.createElement('div');
+        modalContent.id = "templateModal";
+        modalContent.style.boxShadow = '0 0 10px 1px black'
+        modalContent.style.background = '#fff';
+        modalContent.style.width = '1200px';
+        modalContent.style.minHeight = '400px';
+        modalContent.style.height = '80%';
+        modalContent.style.overflow = 'auto';
+        modalContent.style.padding = '20px';
+        modalContent.style.borderRadius = '8px';
+        modalContent.style.position = 'relative';
+
+        const modalTitle = document.createElement('h1');
+        modalTitle.textContent = 'Шаблон';
+        modalTitle.style.marginBottom = '10px';
+        modalTitle.style.textAlign = 'center';
+        modalContent.appendChild(modalTitle);
+        const tagColor = 'rgb(144, 36, 255)';
+
+        const infoContainer = document.createElement('div');
+        infoContainer.style.margin = '15px 0';
+        infoContainer.style.fontSize = '12pt';
+        infoContainer.innerHTML = `
+        <b style="color: ${tagColor};">${TAG.header}</b> — заголовок релиза с краткой технической информацией;<br>
+        <b style="color: ${tagColor};">${TAG.names}</b> — названия аниме, каждое название с новой строки <b style="color: ${tagColor};">${TAG.namesString}</b> — названия аниме, выводятся все в одну строку;<br>
+        <b style="color: ${tagColor};">${TAG.country}</b> — страна; <br>
+        <b style="color: ${tagColor};">${TAG.year}</b> — год выпуска; <b style="color: ${tagColor};">${TAG.season}</b> — сезон;<br>
+        <b style="color: ${tagColor};">${TAG.genre}</b> — жанр; <b style="color: ${tagColor};">${TAG.type}</b> — тип;<br>
+        <b style="color: ${tagColor};">${TAG.episodeCount}</b> — количество эпизодов; <b style="color: ${tagColor};">${TAG.episodeDuration}</b> — длительность;<br>
+        <b style="color: ${tagColor};">${TAG.director}</b> — режиссер;<br>
+        <b style="color: ${tagColor};">${TAG.studio}</b> — названия студий со ссылкой в BB формате; <b style="color: ${tagColor};">${TAG.studioNames}</b> — названия студий;<br>
+        <b style="color: ${tagColor};">${TAG.description}</b> — описание;<br>
+        <b style="color: ${tagColor};">${TAG.episodes}</b> — список эпизодов;<br>
+        <b style="color: ${tagColor};">${TAG.LINK.WA}</b> — ссылка на WA; <b style="color: ${tagColor};">${TAG.LINK.Shikimori}</b> — ссылка на Shikimori; <b style="color: ${tagColor};">${TAG.LINK.AniDb}</b> — ссылка на AniDb;<br>
+        <b style="color: ${tagColor};">${TAG.LINK.MAL}</b> — ссылка на MAL; <b style="color: ${tagColor};">${TAG.LINK.ANN}</b> — ссылка на ANN;<br>
+        <br>
+        Если поле "Подробные тех. данные" заполнено MediaInfo информацией, то заполняются следующие поля;<br>
+        <b style="color: ${tagColor};">${TAG.VIDEO.ext}</b> — формат видео;  <b style="color: ${tagColor};">${TAG.VIDEO.height}</b> — высота видео; <b style="color: ${tagColor};">${TAG.VIDEO.width}</b> — ширина видео; <br>
+        <b style="color: ${tagColor};">${TAG.VIDEO.codec}</b> — кодек видео; <b style="color: ${tagColor};">${TAG.VIDEO.codecProfile}</b> — профиль кодека; <b style="color: ${tagColor};">${TAG.VIDEO.aspect}</b> — соотношение сторон; <br>
+        <b style="color: ${tagColor};">${TAG.VIDEO.bitrate}</b> — битрейт видео; <b style="color: ${tagColor};">${TAG.VIDEO.fps}</b> — частота кадров (fps); <b style="color: ${tagColor};">${TAG.VIDEO.bitDepth}</b> — битовая глубина;<br>
+        <b style="color: ${tagColor};">${TAG.VIDEO.chromaSubsampling}</b> — субдискретизация насыщенности; <b style="color: ${tagColor};">${TAG.VIDEO.colorPrimaries}</b> — основные цвета;<br>
+        <br>
+        Поля ниже берутся из формы, если значения заполнены:<br>
+        <b style="color: ${tagColor};">${TAG.FORM.quality}</b> — качество видео; <b style="color: ${tagColor};">${TAG.FORM.reaper}</b> — автор рипа;<br>
+        <b style="color: ${tagColor};">${TAG.FORM.poster}</b> — ссылка на постер; <b style="color: ${tagColor};">${TAG.FORM.MI}</b> — тех. данные;<br>
+        <b style="color: ${tagColor};">${TAG.FORM.screenshots}</b> — скриншоты;<br>
+        <br>
+        <b style="color: ${tagColor};">${TAG.AUDIO.start}</b> — начало блока аудио; <b style="color: ${tagColor};">${TAG.AUDIO.end}</b> — конец блока аудио;<br>
+        <br>
+        Внутри блока можно сформировать свой шаблон дорожки с аудио:<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.index}</b> — порядоковый номер <b style="color: ${tagColor};">${TAG.TEMPLATE.language}</b> — язык; <b style="color: ${tagColor};">${TAG.TEMPLATE.flag}</b> — ссылка на флаг с static.rutracker.cc;<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.codec}</b> — кодек; <b style="color: ${tagColor};">${TAG.TEMPLATE.bitRate}</b> — битрейт; <br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.sampleRate}</b> — частота; <b style="color: ${tagColor};">${TAG.TEMPLATE.bitDepth}</b> — битовая глубина;<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.channels}</b> — количество каналов; <b style="color: ${tagColor};">${TAG.TEMPLATE.title}</b> — название;<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.type}</b> — 'в составе контейнера' или 'внешним файлом';<br>
+        <br>
+        <b style="color: ${tagColor};">${TAG.SUB.start}</b> — начало блока субтитров; <b style="color: ${tagColor};">${TAG.SUB.end}</b> — конец блока субтитров;<br>
+        <br>
+        Внутри блока можно сформировать свой шаблон строки субтитров:<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.index}</b> — порядоковый номер; <b style="color: ${tagColor};">${TAG.TEMPLATE.language}</b> — язык; <b style="color: ${tagColor};">${TAG.TEMPLATE.flag}</b> — ссылка на флаг с static.rutracker.cc;<br>
+        <b style="color: ${tagColor};">${TAG.TEMPLATE.format}</b> — формат субтитров; <b style="color: ${tagColor};">${TAG.TEMPLATE.title}</b> — название;<br>
+        <br>
+        <i style="color: ${tagColor};">${TAG.TEMPLATE.language}</i> — поддерживает следующие языки: русский, английский, японский, китайский, казахский;<br>
+        <i style="color: ${tagColor};">${TAG.TEMPLATE.flag}</i> — поддерживает флаги: русский, английский, японский;<br>
+    `;
+
+        modalContent.appendChild(infoContainer);
+
+        const templateArea = document.createElement('textarea');
+        templateArea.value = localStorage.getItem(localStorageName);
+        templateArea.rows = 20;
+        templateArea.id = 'templateArea';
+        templateArea.style.width = '100%';
+        templateArea.style.resize = 'vertical';
+        modalContent.appendChild(templateArea);
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'flex-end';
+        buttonContainer.style.marginTop = '10px';
+
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Сохранить';
+        saveButton.style.marginRight = '10px';
+        saveButton.style.backgroundColor = '#547eca';
+        saveButton.style.padding = '5px 10px';
+        saveButton.style.borderRadius = '5px';
+
+        saveButton.addEventListener('click', function () {
+            localStorage.setItem(localStorageName, templateArea.value);
+            showNotification('Шаблон сохранен');
+        });
+
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Закрыть';
+        closeButton.style.backgroundColor = '#d67688';
+        closeButton.style.padding = '5px 10px';
+        closeButton.style.borderRadius = '5px';
+        closeButton.addEventListener('click', closeModal);
+
+        buttonContainer.appendChild(saveButton);
+        buttonContainer.appendChild(closeButton);
+        modalContent.appendChild(buttonContainer);
+
+        const closeButtonSymbol = document.createElement('div');
+        closeButtonSymbol.innerHTML = '❌';
+        closeButtonSymbol.style.position = 'absolute';
+        closeButtonSymbol.style.top = '10px';
+        closeButtonSymbol.style.right = '10px';
+        closeButtonSymbol.style.fontSize = '24px';
+        closeButtonSymbol.style.cursor = 'pointer';
+        closeButtonSymbol.addEventListener('click', closeModal);
+
+        modalContent.appendChild(closeButtonSymbol);
+        modalContainer.appendChild(modalContent);
+        document.body.appendChild(modalContainer);
+
+        function openModal() {
+            modalContainer.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modalContainer.style.display = 'none';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+
+        const openButton = document.getElementById('setTemplateButton');
+        if (!openButton) return;
+        openButton.addEventListener('click', openModal);
+    }
+
+    const generate = (template) => {
+        if (animeInfo == null) {
+            alert("Вставьте ссылку на аниме и нажмите \"Заполнить\"");
+            return;
+        }
+        if (miInfo == null) {
+            alert("Вставьте MediaInfo в поле \"Подробные тех. данные\" и нажмите \"Заполнить тех. данные\"");
+            return;
+        }
+        const audio = miInfo.audioInfo;
+        let code = template;
+        const qualitySelect = table['Качество видео'].input[0];
+        const qualityValue = qualitySelect.options[qualitySelect.selectedIndex].textContent;
+        const header = () => {
+            const names = [];
+            const romName = animeInfo.names?.romaji;
+            if (romName) {
+                if (romName.toLowerCase() === animeInfo.names?.en?.toLowerCase()) {
+                    if (animeInfo.names.synonym) {
+                        names.push(animeInfo.names.synonym);
+                    }
+                }
+                else {
+                    names.push(romName);
+                }
+            }
+            if (animeInfo.names?.en) {
+                names.push(animeInfo.names.en);
+            }
+            if (animeInfo.names?.ru) {
+                names.push(animeInfo.names.ru);
+            }
+
+            const spCount = animeInfo.episodes?.filter(ep => ep.type === episodeType.SP).length || 0;
+            const typeSelect = table['Тип'].input[0];
+            const typeValue = typeSelect.options[typeSelect.selectedIndex].textContent;
+            const episodes = spCount > 0 ? `${animeInfo.type.episodes}+${spCount}` : animeInfo.type.episodes;
+
+            return `${names.join(" | ")} [${table['Год выпуска'].input.value}, ${typeValue}, ${episodes} из ${episodes}] ${qualityValue} ${table['Характеристики видео(для заголовка)'].input.value}`;
+        }
+        const names = () => {
+            return formatNames("\n");
+        };
+        const namesString = () => {
+            return formatNames(" | ");
+        };
+        const formatNames = (separator) => {
+            const names = [];
+
+            if (animeInfo.names?.kanji) {
+                names.push(animeInfo.names.kanji);
+            }
+            const romName = animeInfo.names?.romaji;
+            if (romName) {
+                if (romName.toLowerCase() === animeInfo.names?.en?.toLowerCase()) {
+                    if (animeInfo.names.synonym) {
+                        names.push(animeInfo.names.synonym);
+                    }
+                }
+                else {
+                    names.push(romName);
+                }
+            }
+
+            if (animeInfo.names?.en) {
+                names.push(animeInfo.names.en);
+            }
+            if (animeInfo.names?.ru) {
+                names.push(animeInfo.names.ru);
+            }
+            return names.join(separator);
+        };
+        const formatLink = (name, link) => `[url=${link}]${name}[/url]`;
+        const studioNames = () => animeInfo.studios.map(studio => studio.name).join(', ');
+        const studio = () => animeInfo.studios.map(studio => formatLink(studio.name, studio.link)).join(', ');
+        const episodes = () => {
+            return table['Эпизоды'].input.value;
+        }
+        const getFlagByLang = (lang) => {
+            switch (lang) {
+                case LANG.JAP:
+                    return 'http://i5.imageban.ru/out/2015/02/23/839c5b0694b634374eebbe9fcb519cb6.png';
+                case LANG.RUS:
+                    return 'http://i4.imageban.ru/out/2015/02/23/2b34ca3f87aa5be5015c3073466f162f.png';
+            }
+            return null;
+        }
+        console.log(animeInfo);
+        code = code.replaceAll(TAG.header, header)
+            .replaceAll(TAG.names, names)
+            .replaceAll(TAG.namesString, namesString)
+            .replaceAll(TAG.country, animeInfo.country)
+            .replaceAll(TAG.year, animeInfo.season.year)
+            .replaceAll(TAG.season, animeInfo.season.name)
+            .replaceAll(TAG.genre, animeInfo.genres)
+            .replaceAll(TAG.type, animeInfo.type.type)
+            .replaceAll(TAG.episodeCount, animeInfo.type.episodes)
+            .replaceAll(TAG.episodeDuration, animeInfo.type.duration)
+            .replaceAll(TAG.director, animeInfo.director)
+            .replaceAll(TAG.studio, studio)
+            .replaceAll(TAG.studioNames, studioNames)
+            .replaceAll(TAG.description, animeInfo.description)
+            .replaceAll(TAG.episodes, episodes)
+            .replaceAll(TAG.release, animeInfo.release)
+            .replaceAll(TAG.LINK.AniDb, animeInfo.links.AniDb ? animeInfo.links.AniDb : TAG.LINK.AniDb)
+            .replaceAll(TAG.LINK.ANN, animeInfo.links.ANN ? animeInfo.links.ANN : TAG.LINK.ANN)
+            .replaceAll(TAG.LINK.MAL, animeInfo.links.MAL ? animeInfo.links.MAL : TAG.LINK.MAL)
+            .replaceAll(TAG.LINK.Shikimori, animeInfo.links.Shikimori ? animeInfo.links.Shikimori : TAG.LINK.Shikimori)
+            .replaceAll(TAG.LINK.WA, animeInfo.links.WA ? animeInfo.links.WA : TAG.LINK.WA)
+
+            .replaceAll(TAG.VIDEO.ext, miInfo.videoInfo.fileExt)
+            .replaceAll(TAG.VIDEO.codec, miInfo.videoInfo.codec)
+            .replaceAll(TAG.VIDEO.codecProfile, miInfo.videoInfo.codecProfile)
+            .replaceAll(TAG.VIDEO.width, miInfo.videoInfo.width)
+            .replaceAll(TAG.VIDEO.height, miInfo.videoInfo.height)
+            .replaceAll(TAG.VIDEO.aspect, miInfo.videoInfo.aspect)
+            .replaceAll(TAG.VIDEO.chromaSubsampling, miInfo.videoInfo.chromaSubsampling)
+            .replaceAll(TAG.VIDEO.colorPrimaries, miInfo.videoInfo.colorPrimaries)
+            .replaceAll(TAG.VIDEO.bitrate, miInfo.videoInfo.bitRate)
+            .replaceAll(TAG.VIDEO.fps, miInfo.videoInfo.fps)
+            .replaceAll(TAG.VIDEO.bitDepth, miInfo.videoInfo.bitDepth);
+
+        const matchAudio = code.match(new RegExp(`${TAG.AUDIO.start}(.*?)${TAG.AUDIO.end}`));
+        const matchSubs = code.match(new RegExp(`${TAG.SUB.start}(.*?)${TAG.SUB.end}`));
+
+        if (matchAudio) {
+            const audioTemplate = matchAudio[1];
+            const audios = [];
+            if (!!audio.int) {
+                audio.int.forEach(item => {
+                    item.type = 'в составе контейнера';
+                    audios.push(item);
+                });
+            }
+            if (!!audio.ext) {
+                audio.ext.forEach(item => {
+                    item.type = 'внешним файлом';
+                    audios.push(item);
+                });
+            }
+
+            const replacement = audios.map((info, index) => {
+                const _index = index + 1;
+
+                const flag = getFlagByLang(info.language);
+                return audioTemplate.trim()
+                    .replace(TAG.TEMPLATE.index, _index)
+                    .replace(TAG.TEMPLATE.flag, flag ? flag : TAG.TEMPLATE.flag)
+                    .replace(TAG.TEMPLATE.language, info.language ? info.language : TAG.TEMPLATE.language)
+                    .replace(TAG.TEMPLATE.codec, info.codec ? info.codec : TAG.TEMPLATE.codec)
+                    .replace(TAG.TEMPLATE.bitRate, info.bitRate ? info.bitRate : TAG.TEMPLATE.bitRate)
+                    .replace(TAG.TEMPLATE.sampleRate, info.sampleRate ? info.sampleRate : TAG.TEMPLATE.sampleRate)
+                    .replace(TAG.TEMPLATE.bitDepth, info.bitDepth ? info.bitDepth : TAG.TEMPLATE.bitDepth)
+                    .replace(TAG.TEMPLATE.channels, info.channels ? info.channels : TAG.TEMPLATE.channels)
+                    .replace(TAG.TEMPLATE.title, info.title ? info.title : TAG.TEMPLATE.title)
+                    .replace(TAG.TEMPLATE.type, info.type ? info.type : TAG.TEMPLATE.type)
+            }).join('\n');
+
+            code = code.replace(new RegExp(`${TAG.AUDIO.start}(.*?)${TAG.AUDIO.end}`), replacement).trim();
+        }
+        if (matchSubs) {
+            const subsTemplate = matchSubs[1];
+            const replacement = miInfo.textInfo.map((info, index) => {
+                const flag = getFlagByLang(info.language);
+                return subsTemplate.trim()
+                    .replace(TAG.TEMPLATE.index, index + 1)
+                    .replace(TAG.TEMPLATE.flag, flag ? flag : TAG.TEMPLATE.flag)
+                    .replace(TAG.TEMPLATE.language, info.language ? info.language : TAG.TEMPLATE.language)
+                    .replace(TAG.TEMPLATE.format, info.format ? info.format : TAG.TEMPLATE.format)
+                    .replace(TAG.TEMPLATE.title, info.title ? info.title : TAG.TEMPLATE.title)
+            }).join('\n');
+
+            code = code.replace(new RegExp(`${TAG.SUB.start}(.*?)${TAG.SUB.end}`), replacement).trim();
+        }
+
+        return code.replaceAll(TAG.FORM.quality, qualityValue)
+            .replaceAll(TAG.FORM.reaper, document.getElementById('reaperField').value)
+            .replaceAll(TAG.FORM.poster, table['Обложка'].input.value)
+            .replaceAll(TAG.FORM.screenshots, table['Скриншоты'].input.value)
+            .replaceAll(TAG.FORM.MI, table['MediaInfo'].input.value);
+    }
+
     const init = () => {
         addUrlRow();
         addTechButton();
+        addTemplateRow();
+        createModal();
+        addReaperField();
     }
 
     init();
