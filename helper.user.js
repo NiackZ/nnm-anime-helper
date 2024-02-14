@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.3
+// @version      1.4
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -189,7 +189,7 @@ $Screenshots$
                     animeInfo = null;
                     const response = await fetchData(link);
                     if (!!response?.anime) {
-                        response.anime.release = response.anime?.release.trim();
+                        response.anime.release = response.anime?.release.replaceAll("  ", " ");
                         animeInfo = response.anime;
                         fillFields(response.anime);
                     }
@@ -287,10 +287,15 @@ $Screenshots$
                 miInfo = techData;
                 console.log(techData);
                 if (techData) {
-                    table['Характеристики видео(для заголовка)'].input.value =
-                        miInfo.videoInfo.bitDepth == 10
-                            ? `${miInfo.videoInfo.height}p ${miInfo.videoInfo.bitDepth}-bit`
-                            : `${miInfo.videoInfo.height}p`;
+                    let videoHeader = `${miInfo.videoInfo.height}p`;
+                    if (miInfo.videoInfo.codec !== "AVC") {
+                        videoHeader += ` ${miInfo.videoInfo.codec}`;
+                    }
+                    if (miInfo.videoInfo.bitDepth != 8) {
+                        videoHeader += ` ${miInfo.videoInfo.bitDepth}-bit`;
+                    }
+                    table['Характеристики видео(для заголовка)'].input.value = videoHeader
+
                     table['Видео'].input.value =
                         `${miInfo.videoInfo.codec}, ${miInfo.videoInfo.width}x${miInfo.videoInfo.height} (${miInfo.videoInfo.aspect}), ~${miInfo.videoInfo.fps} fps, ${miInfo.videoInfo.bitRate}`;
 
@@ -799,8 +804,10 @@ $Screenshots$
             const typeSelect = table['Тип'].input[0];
             const typeValue = typeSelect.options[typeSelect.selectedIndex].textContent;
             const episodes = spCount > 0 ? `${animeInfo.type.episodes}+${spCount}` : animeInfo.type.episodes;
+            const langSelect = table['Язык озвучки(для заголовка)'].input[0];
+            const langHeader = langSelect.options[langSelect.selectedIndex].textContent;
 
-            return `${names.join(" | ")} [${table['Год выпуска'].input.value}, ${typeValue}, ${episodes} из ${episodes}] ${qualityValue} ${table['Характеристики видео(для заголовка)'].input.value}`;
+            return `${names.join(" | ")} [${table['Год выпуска'].input.value}, ${typeValue}, ${episodes} из ${episodes}] ${qualityValue} ${table['Характеристики видео(для заголовка)'].input.value} ${langHeader}`;
         }
         const names = () => {
             return formatNames("\n");
