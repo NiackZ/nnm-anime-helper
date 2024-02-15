@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.4
+// @version      1.5
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -140,7 +140,7 @@ $Screenshots$
     for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         const name = cell.innerText.split(":")[0].trim();
-        let input = cell.parentNode.querySelector('td.row2 input');
+        let input = cell.parentNode.querySelector('td.row2 input:not([type=button])');
         if (!input) input = cell.parentNode.querySelector('td.row2 textarea');
         if (!input) input = cell.parentNode.querySelectorAll('td.row2 select');
         table[name] = {'label': cell, 'input': input};
