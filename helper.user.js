@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.5
+// @version      1.6
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -264,10 +264,11 @@ $Screenshots$
         table['Описание'].input.value = anime.description ? anime.description : "";
         if (!!anime.episodes) {
             const episodesArray = anime.episodes.map((episode, index) => {
+                const episodeNumber = (index + 1).toString().padStart(2, '0'); // Добавляем ведущие нули
                 if (episode.type === episodeType.TV) {
-                    return `${index + 1}. ${episode.name}`;
+                    return `${episodeNumber}. ${episode.name}`;
                 } else {
-                    return `${index + 1}. ${episode.name} (${episode.type})`;
+                    return `${episodeNumber}. ${episode.name} (${episode.type})`;
                 }
             });
             table['Эпизоды'].input.value = episodesArray.join('\n');
