@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.6
+// @version      1.7
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -189,7 +189,7 @@ $Screenshots$
                     animeInfo = null;
                     const response = await fetchData(link);
                     if (!!response?.anime) {
-                        response.anime.release = response.anime?.release.replaceAll("  ", " ");
+                        response.anime.release = response.anime?.release?.replaceAll("  ", " ");
                         animeInfo = response.anime;
                         fillFields(response.anime);
                     }
