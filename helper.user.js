@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.1
+// @version      2.2
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -458,9 +458,11 @@ $Screenshots$
                 const parseAudioBlock = (blocks, regex) => {
                     return Array.from(blocks).map(audioBlockMatch => {
                         const audioBlock = audioBlockMatch[1].trim();
+                        const codec = parseField(audioBlock, regex.CODEC);
+                        if (!codec) return false;
                         return {
                             language: translateLanguage(parseField(audioBlock, regex.LANGUAGE)),
-                            codec: parseField(audioBlock, regex.CODEC),
+                            codec,
                             bitRate: parseField(audioBlock, regex.BIT_RATE),
                             sampleRate: parseField(audioBlock, regex.SAMPLING_RATE)?.replaceAll(',', '.'),
                             bitDepth: parseField(audioBlock, regex.BIT_DEPTH),
