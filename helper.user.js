@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.7
+// @version      1.8
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -245,7 +245,18 @@ $Screenshots$
         table['Название латиницей'].input.value = anime.names.romaji ? anime.names.romaji : "";
         table['Английское название'].input.value = anime.names.en ? anime.names.en : "";
         table['Русское название'].input.value = anime.names.ru ? anime.names.ru.replace('[', '(').replace(']', ')') : "";
-        table['Год выпуска'].input.value = anime.season.year ? anime.season.year : "";
+        if (anime.season) {
+            table['Год выпуска'].input.value = anime.season.year ? anime.season.year : "";
+        }
+        else if (anime.release) {
+            let yearMatch = anime.release.match(/\b\d{4}\b/);
+            if (yearMatch) {
+                table['Год выпуска'].input.value = yearMatch[0];
+            } else {
+                console.warn("Год не найден в строке:", text);
+            }
+        }
+
         setOptionIfExists(table['Тип'].input[0], anime.type.shortType);
         table['Жанр'].input.value = anime.genres ? anime.genres : "";
         if (anime.type.duration && anime.type.episodes) {
