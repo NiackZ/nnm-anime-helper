@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.0
+// @version      2.1
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -868,11 +868,15 @@ $Screenshots$
             }
             return null;
         }
-        let yearMatch = animeInfo.release.match(/\b\d{4}\b/);
-        if (yearMatch) {
-            animeInfo.season.year = yearMatch[0];
-        } else {
-            console.warn("Год не найден в строке:", animeInfo.release);
+        if (!animeInfo.season) {
+            let yearMatch = animeInfo.release.match(/\b\d{4}\b/);
+            if (yearMatch) {
+                animeInfo.season = {
+                    year: yearMatch[0]
+                };
+            } else {
+                console.warn("Год не найден в строке:", animeInfo.release);
+            }
         }
 
         console.log(animeInfo);
