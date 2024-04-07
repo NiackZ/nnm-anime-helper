@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      1.8
+// @version      2.0
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -253,7 +253,7 @@ $Screenshots$
             if (yearMatch) {
                 table['Год выпуска'].input.value = yearMatch[0];
             } else {
-                console.warn("Год не найден в строке:", text);
+                console.warn("Год не найден в строке:", anime.release);
             }
         }
 
@@ -868,6 +868,13 @@ $Screenshots$
             }
             return null;
         }
+        let yearMatch = animeInfo.release.match(/\b\d{4}\b/);
+        if (yearMatch) {
+            animeInfo.season.year = yearMatch[0];
+        } else {
+            console.warn("Год не найден в строке:", animeInfo.release);
+        }
+
         console.log(animeInfo);
         code = code.replaceAll(TAG.header, header)
             .replaceAll(TAG.names, names)
