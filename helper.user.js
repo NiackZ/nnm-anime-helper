@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.4
+// @version      2.5
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -146,6 +146,11 @@ $Screenshots$
         table[name] = {'label': cell, 'input': input};
     }
     console.log(table);
+
+    if (table['Обложка']) {
+        table['Обложка'].label.innerHTML += '<br><span style="color: #8B0000">от 300x300 и до 480х640</span>';
+    }
+
     const addUrlRow = () => {
         const table = document.querySelector('#releaseForm table')
         if (!table) return;
