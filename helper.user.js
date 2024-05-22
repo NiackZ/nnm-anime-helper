@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.5
+// @version      2.6
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -226,9 +226,9 @@ $Screenshots$
         inputsCell.appendChild(infoSpan);
     }
     const fetchData = async (link, apiEndpoint = '/get/anime/info') => {
-        const cyclicUrl = 'https://elated-cummerbund-eel.cyclic.app';
+        const appUrl = 'https://anime-info-service.vercel.app';
         try {
-            const response = await fetch(`${cyclicUrl}${apiEndpoint}`, {
+            const response = await fetch(`${appUrl}${apiEndpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
