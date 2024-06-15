@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.6
+// @version      2.7
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -431,13 +431,25 @@ $Screenshots$
             }
             return null;
         }
+        const removeSpacesExceptLast = (str) => {
+            const spaceCount = (str.match(/ /g) || []).length;
+            if (spaceCount <= 1) {
+                return str;
+            }
+
+            const lastSpaceIndex = str.lastIndexOf(' ');
+            const beforeLastSpace = str.slice(0, lastSpaceIndex);
+            const afterLastSpace = str.slice(lastSpaceIndex);
+
+            return `${beforeLastSpace.replace(/ /g, '')}${afterLastSpace}`;
+        };
         const getVideoInfo = (videoBlockMatch, lang) => {
             if (videoBlockMatch) {
                 const parseVideoBlock = (videoBlock, regex) => {
                     const _width = parseField(videoBlock, regex.WIDTH);
                     const _height = parseField(videoBlock, regex.HEIGHT);
                     const _fps = parseField(videoBlock, regex.FRAME_RATE);
-
+                    const _bitRate = parseField(videoBlock, regex.BIT_RATE)?.replaceAll(',', '.');
                     return {
                         codec: parseField(videoBlock, regex.CODEC),
                         codecProfile: parseField(videoBlock, regex.CODEC_PROFILE),
@@ -448,7 +460,7 @@ $Screenshots$
                         chromaSubsampling: parseField(videoBlock, regex.CHROMA_SUBSAMPLING),
                         colorPrimaries: parseField(videoBlock, regex.COLOR_PRIMARIES),
                         bitDepth: parseField(videoBlock, regex.BIT_DEPTH),
-                        bitRate: parseField(videoBlock, regex.BIT_RATE)?.replaceAll(',', '.'),
+                        bitRate: removeSpacesExceptLast(_bitRate),
                         fileExt: null
                     };
                 }
@@ -465,10 +477,11 @@ $Screenshots$
                         const audioBlock = audioBlockMatch[1].trim();
                         const codec = parseField(audioBlock, regex.CODEC);
                         if (codec == null) return null;
+                        const _bitRate = parseField(audioBlock, regex.BIT_RATE);
                         return {
                             language: translateLanguage(parseField(audioBlock, regex.LANGUAGE)),
                             codec,
-                            bitRate: parseField(audioBlock, regex.BIT_RATE),
+                            bitRate: removeSpacesExceptLast(_bitRate),
                             sampleRate: parseField(audioBlock, regex.SAMPLING_RATE)?.replaceAll(',', '.'),
                             bitDepth: parseField(audioBlock, regex.BIT_DEPTH),
                             channels: parseField(audioBlock, regex.CHANNELS),
