@@ -2,7 +2,7 @@
 // @name         nnm release helper
 // @namespace    nnm helpers
 // @description  Заполнение полей по данным со страницы аниме на сайте World-Art
-// @version      2.7
+// @version      2.8
 // @author       NiackZ
 // @homepage     https://github.com/NiackZ/nnm-anime-helper
 // @downloadURL  https://github.com/NiackZ/nnm-anime-helper/raw/master/helper.user.js
@@ -913,7 +913,7 @@ $Screenshots$
             .replaceAll(TAG.director, animeInfo.director)
             .replaceAll(TAG.studio, studio)
             .replaceAll(TAG.studioNames, studioNames)
-            .replaceAll(TAG.description, animeInfo.description)
+            .replaceAll(TAG.description, table['Описание'].input.value)
             .replaceAll(TAG.episodes, episodes)
             .replaceAll(TAG.release, animeInfo.release)
             .replaceAll(TAG.LINK.AniDb, animeInfo.links.AniDb ? animeInfo.links.AniDb : TAG.LINK.AniDb)
